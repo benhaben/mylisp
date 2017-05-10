@@ -58,7 +58,7 @@ struct lval {
   /* Function */
   lbuiltin builtin;
   lenv* env;
-  lval* formals;
+  lval* formals; //arguments
   lval* body;
   
   /* Expression */
