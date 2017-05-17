@@ -33,3 +33,7 @@ cmake-build-debug
 # Debug files
 *.dSYM/
 *.su
+
+.DS_Store
+node_modules/
+npm-debug.log

@@ -1,0 +1,15 @@
+{
+  "author": "yinshen.sy",
+  "name": "myLisp",
+  "description": "toy lisp",
+  "license": "MIT",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/benhaben/mylisp"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "antlr4": "^4.7.0",
+  }
+}

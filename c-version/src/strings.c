@@ -110,6 +110,7 @@ lval* lval_builtin(lbuiltin func) {
 
 lenv* lenv_new(void);
 
+//a constructor for lambda
 lval* lval_lambda(lval* formals, lval* body) {
   lval* v = malloc(sizeof(lval));
   v->type = LVAL_FUN;  
