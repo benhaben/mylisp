@@ -45,9 +45,15 @@ YearPrinter = function () {
 };
 YearPrinter.prototype = Object.create(SimpleListener.SimpleListener.prototype);
 YearPrinter.prototype.constructor = YearPrinter;
-YearPrinter.prototype.exitYear = function (ctx) {
-    console.log(ctx);
+
+YearPrinter.prototype.enterYear = function (ctx,s) {
+    console.log(ctx.children[0].getText());
 };
+
+YearPrinter.prototype.exitMonth = function (ctx,s,t) {
+    console.log(ctx.children[0].getText());
+};
+
 
 var input = "January 1900";
 var chars = new antlr4.InputStream(input);
@@ -58,3 +64,7 @@ parser.buildParseTrees = true;
 var tree = parser.date();
 var printer = new YearPrinter();
 antlr4.tree.ParseTreeWalker.DEFAULT.walk(printer, tree);
+
+var SimpleVisitor = require('./gen/SimpleVisitor').SimpleVisitor;
+var visitor = new SimpleVisitor()
+// return visitor.visitDate(tree) // 'visitBlock' since that was the start rule
