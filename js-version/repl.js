@@ -23,8 +23,8 @@ rl.on('line', (line) => {
     const errorListener = new ErrorListener();
     const parser = new Parser(line, listener, errorListener);
     parser.walk();
-    var str = parser.tree.toStringTree();
-    console.log(`the tree is : ${str}`);
+    // var str = parser.tree.toStringTree();
+    // console.log(`the tree is : ${str}`);
     rl.prompt();
 }).on('close', () => {
     console.log('Have a great day!');

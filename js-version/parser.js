@@ -8,6 +8,9 @@ var AntlrLispParser = require('./gen/LispParser').LispParser;
 var AntlrLispListener = require('./gen/LispListener').LispListener;
 
 //定义语义处理的结构体
+// 1. print Sexpr and Qexpr
+// 2. eval
+// 3. function
 
 LispListener = function () {
     AntlrLispListener.call(this);
