@@ -14,12 +14,12 @@ rl.prompt();
 rl.on('line', (line) => {
     const parser = new Parser(line);
     var r = parser.startVisitor();
-    console.log(`结果是：${r}`);
+    console.log(`${r}`);
     rl.prompt();
 }).on('close', () => {
-    console.log('\nHave a great day!');
     process.exit(0);
 });
 
 
 
+// TODO: 统一错误处理

@@ -7,12 +7,37 @@ var Parser = require('../sexpr/parser').Parser
     , expect = require('chai').expect;
 // var expect = chai.expect;    // Using Expect style
 
-xdescribe('s-expression', function(){
+describe('s-expression', function(){
     it('should parser (+ 1 2)', function(){
         const parser = new Parser("(+ 1 2)");
         var r = parser.startVisitor();
         expect(r).to.equal(3);
 
+    })
+
+    it('should parser ()', function(){
+        const parser = new Parser("()");
+        var r = parser.startVisitor();
+        expect(r).to.equal("()");
+
+    })
+
+    it('should parser empty string', function(){
+        const parser = new Parser("");
+        var r = parser.startVisitor();
+        expect(r).to.be.a('undefined');
+    })
+
+    it('should parser "(+ (* 1 2) (/ 4 2))" ', function(){
+        const parser = new Parser("(+ (* 1 2) (/ 4 2))");
+        var r = parser.startVisitor();
+        expect(r).to.equal(4);
+    })
+
+    it('should parser "(+ 1 +)" ', function(){
+        const parser = new Parser("(+ 1 +)");
+        var r = parser.startVisitor();
+        expect(r).to.be.a('string');
     })
 
     // it('should run the callback for a method just once', function(done){

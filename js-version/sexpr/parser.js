@@ -30,7 +30,7 @@ MySExprParser.prototype.startVisitor = function () {
     return visitor.visitLispy(this.tree)
 };
 
-function MyVisitor () {
+function MyVisitor() {
     AntlrSExprVisitor.call(this);
     return this;
 };
@@ -44,53 +44,95 @@ MyVisitor.prototype.visitLispy = function (ctx) {
     if (ctx.exception) {
         return;
     }
-
-    return this.visit(ctx.expr(0));
+    let ret;
+    if (ctx.children && ctx.children.length > 0) {
+        if (ctx.children.length > 1) {
+            //语法支持expr*
+            ret = `请加上():\t(${ctx.getText()})`;
+        } else {
+            //处理(+ 1 2)
+            if (ctx.expr(0)){
+                ret= this.visit(ctx.expr(0));
+            }
+        }
+    }
+    return ret;
 };
 
 MyVisitor.prototype.visitExpr = function (ctx) {
-    //operator or number
     if (ctx.exception) {
         return;
     }
+    if (ctx.sexpr(0)){
+        return this.visit(ctx.sexpr(0));
+    }
+    else{
+        return `${ctx.getText()}不符合要求`;
+    }
+}
 
-    const COUNT = ctx.children.length;
+
+MyVisitor.prototype.visitSexpr = function (ctx) {
+    if (ctx.exception) {
+        return;
+    }
+    return this.visitArray(ctx.children)
+}
+
+MyVisitor.prototype.visitArray = function (children) {
+
+    const COUNT = children.length;
     let op = '+';
 
-    //0是'（'，1是操作符
-    if (ctx.children[1] instanceof AntlrSExprParser.OperatorContext) {
-        op = ctx.children[1].getText();
+    if (COUNT >= 1) {
+
+        //0是'（'
+        let startOPIndex = 1,
+            End = COUNT - 1;
+
+        if (children[1].OPERATOR && children[1].OPERATOR()) {
+            op = children[1].OPERATOR().getText()
+        } else {
+            //()空的sexpr
+            return children[0].parentCtx.getText();
+        }
+        // ( + 1 2 )
+        // 0 1 2 3 4
+        // count = 5
+
+        // ( + 1 2 3 )
+        // 0 1 2 3 4 5
+        // count = 6
+
+        // 从一个数开始执行op
+        let sum = this.myVisit(children[startOPIndex + 1]);
+
+        for (let i = startOPIndex + 2; i < End; i++) {
+            //ExprContext
+            let right = this.myVisit(children[i]);
+            sum = this.math(op, sum, right);
+        }
+        return sum;
+
     }
-    // ( + 1 2 )
-    // 0 1 2 3 4
-    // count = 5
-
-    // ( + 1 2 3 )
-    // 0 1 2 3 4 5
-    // count = 6
-
-    // 从一个数开始执行op
-    let sum = this.myVisit(ctx.children[2]);
-
-    for (let i = 3; i < COUNT - 1; i++) {
-        //ExprContext
-        let right = this.myVisit(ctx.children[i]);
-        sum = this.math(op, sum, right);
-    }
-    return sum;
 
 };
 
 MyVisitor.prototype.myVisit = function (node) {
-    // 孩子只有一个说明是没有子节点的终极节点了，有多个孩子说明需要继续访问
-    // 最好还是`用类型来判断
-    // node.NUMBER,node.NUMBER.getSymbol
-    if (node.children.length === 1 && node.children[0].getSymbol().type === AntlrSExprParser.NUMBER) {
-        return Number.parseInt(node.getText());
+    if (node.children.length === 1
+        && node.children[0].getSymbol   //只有TerminalNodeImpl才有getSymbol方法
+        && node.children[0].getSymbol().type === AntlrSExprParser.NUMBER) {
+        let ret = Number.parseInt(node.getText());
+        if( typeof ret === "number" && !isNaN(ret)){
+            return ret;
+        }else{
+            return `${node.getText()} is not number`;
+        }
     } else {
         return this.visit(node);
     }
-}
+};
+
 MyVisitor.prototype.math = function (op, left, right) {
     if (op === '+') {
         return left + right;

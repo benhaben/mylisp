@@ -16,14 +16,14 @@ var serializedATN = ["\u0003\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964",
     "\u0002\b\n\u0005\u0004\u0003\u0002\t\b\u0003\u0002\u0002\u0002\n\r\u0003",
     "\u0002\u0002\u0002\u000b\t\u0003\u0002\u0002\u0002\u000b\f\u0003\u0002",
     "\u0002\u0002\f\u0003\u0003\u0002\u0002\u0002\r\u000b\u0003\u0002\u0002",
-    "\u0002\u000e\u0012\u0007\u0005\u0002\u0002\u000f\u0012\u0007\u0006\u0002",
+    "\u0002\u000e\u0012\u0007\u0003\u0002\u0002\u000f\u0012\u0007\u0004\u0002",
     "\u0002\u0010\u0012\u0005\u0006\u0004\u0002\u0011\u000e\u0003\u0002\u0002",
     "\u0002\u0011\u000f\u0003\u0002\u0002\u0002\u0011\u0010\u0003\u0002\u0002",
-    "\u0002\u0012\u0005\u0003\u0002\u0002\u0002\u0013\u0017\u0007\u0003\u0002",
+    "\u0002\u0012\u0005\u0003\u0002\u0002\u0002\u0013\u0017\u0007\u0005\u0002",
     "\u0002\u0014\u0016\u0005\u0004\u0003\u0002\u0015\u0014\u0003\u0002\u0002",
     "\u0002\u0016\u0019\u0003\u0002\u0002\u0002\u0017\u0015\u0003\u0002\u0002",
     "\u0002\u0017\u0018\u0003\u0002\u0002\u0002\u0018\u001a\u0003\u0002\u0002",
-    "\u0002\u0019\u0017\u0003\u0002\u0002\u0002\u001a\u001b\u0007\u0004\u0002",
+    "\u0002\u0019\u0017\u0003\u0002\u0002\u0002\u001a\u001b\u0007\u0006\u0002",
     "\u0002\u001b\u0007\u0003\u0002\u0002\u0002\u0005\u000b\u0011\u0017"].join("");
 
 
@@ -33,10 +33,10 @@ var decisionsToDFA = atn.decisionToState.map( function(ds, index) { return new a
 
 var sharedContextCache = new antlr4.PredictionContextCache();
 
-var literalNames = [ null, "'('", "')'", null, null, "'*'", "'/'", "'+'", 
+var literalNames = [ null, null, null, "'('", "')'", "'*'", "'/'", "'+'", 
                      "'-'" ];
 
-var symbolicNames = [ null, null, null, "NUMBER", "OPERATOR", "MUL", "DIV", 
+var symbolicNames = [ null, "NUMBER", "OPERATOR", "LP", "RP", "MUL", "DIV", 
                       "ADD", "SUB", "WS" ];
 
 var ruleNames =  [ "lispy", "expr", "sexpr" ];
@@ -60,10 +60,10 @@ Object.defineProperty(SExprParser.prototype, "atn", {
 });
 
 SExprParser.EOF = antlr4.Token.EOF;
-SExprParser.T__0 = 1;
-SExprParser.T__1 = 2;
-SExprParser.NUMBER = 3;
-SExprParser.OPERATOR = 4;
+SExprParser.NUMBER = 1;
+SExprParser.OPERATOR = 2;
+SExprParser.LP = 3;
+SExprParser.RP = 4;
 SExprParser.MUL = 5;
 SExprParser.DIV = 6;
 SExprParser.ADD = 7;
@@ -124,7 +124,7 @@ SExprParser.prototype.lispy = function() {
         this.state = 9;
         this._errHandler.sync(this);
         _la = this._input.LA(1);
-        while((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << SExprParser.T__0) | (1 << SExprParser.NUMBER) | (1 << SExprParser.OPERATOR))) !== 0)) {
+        while((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << SExprParser.NUMBER) | (1 << SExprParser.OPERATOR) | (1 << SExprParser.LP))) !== 0)) {
             this.state = 6;
             this.expr();
             this.state = 11;
@@ -204,7 +204,7 @@ SExprParser.prototype.expr = function() {
             this.state = 13;
             this.match(SExprParser.OPERATOR);
             break;
-        case SExprParser.T__0:
+        case SExprParser.LP:
             this.enterOuterAlt(localctx, 3);
             this.state = 14;
             this.sexpr();
@@ -242,6 +242,14 @@ function SexprContext(parser, parent, invokingState) {
 SexprContext.prototype = Object.create(antlr4.ParserRuleContext.prototype);
 SexprContext.prototype.constructor = SexprContext;
 
+SexprContext.prototype.LP = function() {
+    return this.getToken(SExprParser.LP, 0);
+};
+
+SexprContext.prototype.RP = function() {
+    return this.getToken(SExprParser.RP, 0);
+};
+
 SexprContext.prototype.expr = function(i) {
     if(i===undefined) {
         i = null;
@@ -274,11 +282,11 @@ SExprParser.prototype.sexpr = function() {
     try {
         this.enterOuterAlt(localctx, 1);
         this.state = 17;
-        this.match(SExprParser.T__0);
+        this.match(SExprParser.LP);
         this.state = 21;
         this._errHandler.sync(this);
         _la = this._input.LA(1);
-        while((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << SExprParser.T__0) | (1 << SExprParser.NUMBER) | (1 << SExprParser.OPERATOR))) !== 0)) {
+        while((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << SExprParser.NUMBER) | (1 << SExprParser.OPERATOR) | (1 << SExprParser.LP))) !== 0)) {
             this.state = 18;
             this.expr();
             this.state = 23;
@@ -286,7 +294,7 @@ SExprParser.prototype.sexpr = function() {
             _la = this._input.LA(1);
         }
         this.state = 24;
-        this.match(SExprParser.T__1);
+        this.match(SExprParser.RP);
     } catch (re) {
     	if(re instanceof antlr4.error.RecognitionException) {
 	        localctx.exception = re;
