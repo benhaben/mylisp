@@ -29,6 +29,7 @@ function Lval() {
 
 Lval.prototype.add = function (child) {
     this.cell.push(child);
+    return this;
 };
 
 Lval.prototype.count = function () {
@@ -49,19 +50,57 @@ Lval.prototype.take = function (i) {
 };
 Lval.prototype.del = function (start, end) {
     return this.cell.splice(start, end);
-}
+};
 
 Lval.prototype.join = function (y) {
-    this.cell = this.cell.concat(y);
-    return this.cell;
+    this.cell = this.cell.concat(y.cell);
+    return this;
 };
+
+Lval.prototype.value = function () {
+    let v = this;
+    let r;
+    switch (v.type) {
+        case Lval.NUM:
+            r = v.num;
+            break;
+        case Lval.ERR:
+            r = v.err;
+            break;
+        case Lval.SYM:
+            r = v.sym;
+            break;
+        case Lval.SEXPR:
+            r = this.expr_value(v, '(', ')');
+            break;
+        case Lval.QEXPR:
+            r = this.expr_value(v, '{', '}');
+            break;
+
+    }
+    return r;
+}
+
+Lval.prototype.expr_value = function (v, open, close) {
+    let r = open;
+    for (let i = 0; i < v.count(); i++) {
+        r += v.cell[i].value();
+        if (i != (v.count() - 1)) {
+            r += ' ';
+        }
+    }
+    r += close;
+    return r;
+};
+
 
 function lval_err(str) {
     let r = new Lval();
     r.err = str;
     r.type = Lval.ERR;
     return r
-}
+};
+
 ///////////////////////////////////////////////
 
 function SimpleAst() {

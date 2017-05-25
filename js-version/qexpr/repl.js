@@ -22,7 +22,6 @@ rl.on('line', (line) => {
     //2. convert to ast, get lval
     let ast = new SimpleAst();
     ast.startWalk(parser.tree);
-    console.log(ast.toString());
 
     //3. semantics
     let lispy = new Lispy();

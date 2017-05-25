@@ -106,47 +106,118 @@ Lispy.prototype.builtin_head = function (a) {
     return r;
 };
 
+Lispy.prototype.builtin_tail = function (a) {
+    let r;
+    do {
+        if (a.count() != 1) {
+            r = lval_err("Function 'tail' passed too many arguments!");
+            break;
+        }
+
+        if (a.cell[0].type != Lval.QEXPR) {
+            r = lval_err("Function 'tail' passed incorrect types!");
+            break;
+        }
+
+        if (a.cell[0].count() == 0) {
+            r = lval_err("Function 'tail' passed {}!");
+            break;
+        }
+        //input is tail {1 2 3 }
+        //sym 'tail' has been removed，so cell[0] is {1 2 3 }
+        r = a.take(0);
+        r.del(0, 1);
+
+    } while (false);
+    return r;
+};
+
+Lispy.prototype.builtin_join = function (a) {
+    //input is join {1 2 3 } {4 5 6} {7 8}
+    //sym 'join' has been removed，so a.cell[0] is {1 2 3 }, cell[1] is {4 5 6 }
+
+    for (let i = 0; i < a.count(); i++) {
+        if (a.cell[i].type !== Lval.QEXPR) {
+            return lval_err("Function 'join' passed incorrect type.");
+        }
+    }
+
+    let x = a.pop(0);
+
+    while (a.count() > 0) {
+        x = x.join(a.pop(0));
+    }
+
+    return x;
+};
+
+Lispy.prototype.builtin_eval = function (a) {
+    let r;
+    do {
+        if (a.count() != 1) {
+            r = lval_err("Function 'eval' passed too many arguments!");
+            break;
+        }
+
+        if (a.cell[0].type != Lval.QEXPR) {
+            r = lval_err("Function 'eval' passed incorrect types!");
+            break;
+        }
+
+
+        let x = a.take(0);
+        x.type = Lval.SEXPR;
+        r = this.eval(x);
+    } while (false);
+    return r;
+};
+
+Lispy.prototype.builtin_op = function (a, op) {
+    for (let i = 0; i < a.count(); i++) {
+        if (a.cell[i].type !== Lval.NUM) {
+            return lval_err("Cannot operate on non-number!");
+        }
+    }
+
+    let x = a.pop(0);
+    if (op === '-' && a.count() === 0) {
+        x.num = -x.num;
+    }
+
+    while (a.count() > 0) {
+        let y = a.pop(0);
+        if (op === '+') {
+            x.num += y.num;
+        }
+        if (op === '-') {
+            x.num -= y.num;
+        }
+        if (op === '*') {
+            x.num *= y.num;
+        }
+        if (op === '/') {
+            x.num /= y.num;
+        }
+    }
+
+    return x;
+};
+
+
 Lispy.prototype.printTree = function (v) {
     console.log(tree.asTree(v, true));
 };
 
 Lispy.prototype.println = function (v) {
-    this.print(v);console.log('\n');
+    this.print(v);
+    console.log('\n');
 };
 
 Lispy.prototype.print = function (v) {
-    switch (v.type) {
-        case Lval.NUM:
-            this.log(v.num);
-            break;
-        case Lval.ERR:
-            this.log(`Error: ${v.err}`);
-            break;
-        case Lval.SYM:
-            this.log(v.sym);
-            break;
-        case Lval.SEXPR:
-            this.expr_print(v, '(', ')');
-            break;
-        case Lval.QEXPR:
-            this.expr_print(v, '{', '}');
-            break;
-
-    }
+    this.log(v.value());
 };
-Lispy.prototype.log = function(str){
+Lispy.prototype.log = function (str) {
     process.stdout.write(str.toString());
-}
-
-Lispy.prototype.expr_print = function (v, open, close) {
-    this.log(open);
-    for (let i = 0; i < v.count(); i++) {
-        this.print(v.cell[i]);
-        if(i != (v.count()-1)){
-            this.log(' ');
-        }
-    }
-    this.log(close);
 };
 
 
