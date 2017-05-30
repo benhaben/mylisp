@@ -3,12 +3,13 @@
  */
 "use strict";
 const Lval = require('./ast').Lval;
-const lval_err = require('./ast').lval_err;
-const lval_sexpr = require('./ast').lval_sexpr;
 const Env = require('./ast').Env;
 const tree = require('treeify');
 const Parser = require('./parser').Parser;
+const lval_sexpr = require('./ast').lval_sexpr;
+const ltype_name = require('./ast').ltype_name;
 
+////////////////////////////////////////////////
 function Lispy() {
     this.root_env = new Env();
     this.lenv_add_builtins(this.root_env);
@@ -124,12 +125,12 @@ Lispy.prototype.builtin_head = function (e, a) {
     let r;
     do {
         if (a.count() != 1) {
-            r = lval_err("Function 'head' passed too many arguments!");
+            r = lval_err(`Function 'head' passed incorrect number of arguments. Got ${a.count()}, Expected 1.`);
             break;
         }
 
         if (a.cell[0].type != Lval.QEXPR) {
-            r = lval_err("Function 'head' passed incorrect types!");
+            r = lval_err(`Function 'head' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected Q-Expression.`);
             break;
         }
 
@@ -153,12 +154,12 @@ Lispy.prototype.builtin_tail = function (e, a) {
     let r;
     do {
         if (a.count() != 1) {
-            r = lval_err("Function 'tail' passed too many arguments!");
+            r = lval_err(`Function 'tail' passed incorrect number of arguments. Got ${a.count()}, Expected 1.`);
             break;
         }
 
         if (a.cell[0].type != Lval.QEXPR) {
-            r = lval_err("Function 'tail' passed incorrect types!");
+            r = lval_err(`Function 'tail' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected Q-Expression.`);
             break;
         }
 
@@ -181,7 +182,7 @@ Lispy.prototype.builtin_join = function (e, a) {
 
     for (let i = 0; i < a.count(); i++) {
         if (a.cell[i].type !== Lval.QEXPR) {
-            return lval_err("Function 'join' passed incorrect type.");
+            return lval_err(`Function 'tail' passed incorrect type for argument ${i}. Got ${ltype_name(a.cell[i].type)}, Expected Q-Expression.`);
         }
     }
 
@@ -198,12 +199,12 @@ Lispy.prototype.builtin_eval = function (e, a) {
     let r;
     do {
         if (a.count() != 1) {
-            r = lval_err("Function 'eval' passed too many arguments!");
+            r = lval_err(`Function 'eval' passed incorrect number of arguments. Got ${a.count()}, Expected 1.`);
             break;
         }
 
         if (a.cell[0].type != Lval.QEXPR) {
-            r = lval_err("Function 'eval' passed incorrect types!");
+            r = lval_err(`Function 'eval' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected Q-Expression.`);
             break;
         }
 

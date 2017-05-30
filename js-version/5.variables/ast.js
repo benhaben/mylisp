@@ -117,19 +117,6 @@ Lval.prototype.expr_value = function (v, open, close) {
 };
 
 
-function lval_err(str) {
-    let r = new Lval();
-    r.err = str;
-    r.type = Lval.ERR;
-    return r
-};
-
-function lval_sexpr() {
-    let r = new Lval();
-    r.type = Lval.SEXPR;
-    return r;
-};
-
 
 ///////////////////////////////////////////////
 function Env() {
@@ -151,7 +138,7 @@ Env.prototype.get = function (key) {
     if(this.map.containsKey(key)){
         return this.map.get(key);
     }else{
-        return lval_err("unbound symbol!");
+        return lval_err(`unbound symbol ${key.sym}!`);
     }
 };
 
@@ -232,29 +219,38 @@ SimpleAst.prototype.convertParserRuleContextType = function (node) {
 }
 
 
-// const Parser = require('./parser').Parser;
-// const parser = new Parser("head {1 2 3} {4 5}");
-// let ast = new SimpleAst();
-// ast.startWalk(parser.tree);
-// let tree = require('treeify');
-// var r = tree.asTree(ast.root, true);
-// console.log(r);
+/////////////////////////////helper function
+function lval_err(str) {
+    let r = new Lval();
+    r.err = str;
+    r.type = Lval.ERR;
+    return r
+};
 
+function lval_sexpr() {
+    let r = new Lval();
+    r.type = Lval.SEXPR;
+    return r;
+};
 
-// var e = new Env();
-// var v = new Lval();
-// var k = new Lval();
-// k.sym = "test";
-// var k1 = new Lval();
-// k1.sym = "test1";
-// e.put(k, v);
-// var b = e.get(k1);
-// console.log(v ===b);
+function ltype_name(t) {
+    switch(t) {
+        case Lval.FUN: return "Function";
+        case Lval.NUM: return "Number";
+        case Lval.ERR: return "Error";
+        case Lval.SYM: return "Symbol";
+        case Lval.SEXPR: return "S-Expression";
+        case Lval.QEXPR: return "Q-Expression";
+        default: return "Unknown";
+    }
+}
+
+exports.ltype_name = ltype_name;
+exports.lval_sexpr = lval_sexpr;
+exports.lval_err = lval_err;
 
 exports.SimpleAst = SimpleAst;
 exports.Lval = Lval;
 exports.Env = Env;
-exports.lval_err = lval_err;
-exports.lval_sexpr = lval_sexpr;
 
 

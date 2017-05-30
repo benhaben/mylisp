@@ -3,7 +3,7 @@
  */
 
 
-var Parser = require('../polish_notation/parser').Parser
+var Parser = require('../2.polish_notation/parser').Parser
     , expect = require('chai').expect;
 // var expect = chai.expect;    // Using Expect style
 

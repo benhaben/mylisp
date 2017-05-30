@@ -3,7 +3,7 @@
  */
 
 "use strict";
-const index = require('../variables/index');
+const index = require('../5.variables/index');
 const Parser = index.Parser
     , expect = require('chai').expect
     , SimpleAst = index.SimpleAst
@@ -59,7 +59,7 @@ describe('variables', function () {
         let lispy = new Lispy();
         let r = lispy.start_eval(line);
 
-        expect(r.value()).to.equal('unbound symbol!');
+        expect(r.value()).to.equal('unbound symbol hello!');
     });
 
     it('should parser + 1 2', function () {

@@ -3,7 +3,7 @@
  */
 
 
-var Parser = require('../sexpr/parser').Parser
+var Parser = require('../4.sexpr/parser').Parser
     , expect = require('chai').expect;
 // var expect = chai.expect;    // Using Expect style
 

@@ -3,7 +3,7 @@
  */
 
 "use strict";
-const index = require('../qexpr/index');
+const index = require('../3.qexpr/index');
 const Parser = index.Parser
     , expect = require('chai').expect
     , SimpleAst = index.SimpleAst
