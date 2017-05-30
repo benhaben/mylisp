@@ -7,7 +7,7 @@ var Parser = require('../2.polish_notation/parser').Parser
     , expect = require('chai').expect;
 // var expect = chai.expect;    // Using Expect style
 
-describe('polish-notation', function(){
+describe('2.polish-notation', function(){
     it('should parser (+ 1 2)', function(){
         const parser = new Parser("(+ 1 2)");
         var r = parser.startVisitor();

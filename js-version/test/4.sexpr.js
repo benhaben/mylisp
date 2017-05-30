@@ -7,7 +7,7 @@ var Parser = require('../4.sexpr/parser').Parser
     , expect = require('chai').expect;
 // var expect = chai.expect;    // Using Expect style
 
-describe('s-expression', function(){
+describe('4.s-expression', function(){
     it('should parser (+ 1 2)', function(){
         const parser = new Parser("(+ 1 2)");
         var r = parser.startVisitor();
