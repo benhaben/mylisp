@@ -16,6 +16,7 @@ Lval.STR = 7;
 
 function Lval() {
     this.type;
+    this.line; // error line
 
     /* Basic */
     this.num;
@@ -39,6 +40,8 @@ Lval.prototype.copy = function () {
     let v = this;
     let x = new Lval();
     x.type = v.type;
+    x.line = v.line;
+
     switch (v.type) {
         /* Copy Functions and Numbers Directly */
         case Lval.FUN:
@@ -156,6 +159,7 @@ Lval.prototype.value = function () {
     let v = this;
     let r;
     switch (v.type) {
+
         case Lval.NUM:
             r = v.num;
             break;
@@ -163,7 +167,7 @@ Lval.prototype.value = function () {
             r = v.str;
             break;
         case Lval.ERR:
-            r = v.err;
+            r = (v.err||"") + (v.line ? `\t${v.line}` : "");
             break;
         case Lval.SYM:
             r = v.sym;
@@ -276,10 +280,7 @@ SimpleAst.prototype.startWalk = function (tree) {
 
 SimpleAst.prototype._walk = function (tree, parentLval) {
     let text = tree.getText();
-    let parserRuleIndex = tree.ruleIndex;
-    if (parserRuleIndex === AntlrParser.RULE_comment) {
-        return;
-    }
+
     if (!tree.children) {
         //leaf node
         if (text === '(' || text === ')' || text === '{' || text === '}')
@@ -290,7 +291,7 @@ SimpleAst.prototype._walk = function (tree, parentLval) {
         lval.num = lval.type === Lval.NUM ? Number.parseInt(text) : null;
         lval.sym = lval.type === Lval.SYM ? text : null;
         lval.str = lval.type === Lval.STR ? text : null;
-
+        lval.line = tree.symbol.line;
         parentLval.cell.push(lval);
 
     } else if (tree.children.length === 1) {
@@ -305,6 +306,7 @@ SimpleAst.prototype._walk = function (tree, parentLval) {
         lval.num = lval.type === Lval.NUM ? Number.parseInt(text) : null;
         lval.sym = lval.type === Lval.SYM ? text : null;
         lval.str = lval.type === Lval.STR ? text : null;
+        lval.line = tree.start.line;
 
         parentLval.add(lval);
         for (let i = 0; i < tree.children.length; i++) {
@@ -326,7 +328,11 @@ SimpleAst.prototype.convertTerminalNodeType = function (node) {
         ret = Lval.NUM;
     } else if (parserNodeType === AntlrParser.STRING) {
         ret = Lval.STR;
+    }else if (parserNodeType === AntlrParser.COMMENT) {
+        ret = Lval.COMMENT;
+
     }
+
     return ret;
 };
 
@@ -345,10 +351,11 @@ SimpleAst.prototype.convertParserRuleContextType = function (node) {
 
 
 ///////////////////////////// ------ helper function
-function lval_err(str) {
+function lval_err(str, line) {
     let r = new Lval();
     r.err = str;
     r.type = Lval.ERR;
+    r.line = line;
     return r
 };
 

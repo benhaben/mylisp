@@ -4,7 +4,7 @@ grammar Strings;
 
 lispy    : expr*;
 
-expr   : NUMBER | SYMBOL | sexpr | qexpr | string | comment;
+expr   : NUMBER | SYMBOL | sexpr | qexpr | string ;
 
 sexpr  : LP expr*  RP;
 
@@ -12,15 +12,13 @@ qexpr  : LB expr* RB ;
 
 NUMBER : '-'?[0-9]+ ;
 
-comment: COMMENT;
-
-COMMENT: ';' ~[\r\n]* ;
+COMMENT: ';' ~[\r\n]* -> skip ;
 
 string : STRING ;
 
 STRING : '"' ( ~'"' | '\\' '"' )* '"' ;
 
-SYMBOL : ([0-9]|'a'..'z'|'A'.. 'Z'|'_'|ADD|SUB|MUL|DIV|'$'|'!'|'&'|'\\'|'>'|'<'|'>='|'<='|'=='|'!=' )+;
+SYMBOL : ([0-9]|'a'..'z'|'A'.. 'Z'|'_'|ADD|SUB|MUL|DIV|'$'|'!'|'&'|'\\'|'>'|'<'|'>='|'<='|'=='|'!='|'=' )+;
 
 LP  :   '(';
 RP  :   ')';

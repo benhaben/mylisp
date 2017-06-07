@@ -51,7 +51,9 @@ MyParser.prototype.startWalk = function () {
     //convert to ast, get lval
     let ast = new SimpleAst();
     ast.startWalk(this.tree);
+    this.root = null;
     this.root = ast.root;
+    return this.root;
 };
 
 

@@ -53,13 +53,40 @@ function Lispy() {
     this.lenv_add_builtins(this.root_env);
 };
 
+
+Lispy.prototype.start_eval_file = function (lines) {
+
+    if (lines.trim() == "") {
+        return lval_err();
+    }
+    //1. create antlr tree
+    const parser = new Parser(lines);
+    let errors = parser.errors();
+    if (errors.length !== 0) {
+        return lval_err(JSON.stringify(errors, null, '\t'));
+    }
+    let ret = [];
+    let tree = parser.tree;
+    for (let i = 0; i < tree.children.length; i++) {
+        let expr = tree.children[i];
+        let rootTree = parser.startWalk(expr);
+        let r = this.eval(this.root_env, rootTree);
+        ret.push(r);
+    }
+    return ret;
+};
+
 Lispy.prototype.start_eval = function (line) {
+
+    if (line.trim() == "") {
+        return lval_err();
+    }
 
     //1. create antlr tree
     const parser = new Parser(line);
     let errors = parser.errors();
-    if(errors.length !== 0){
-        return lval_err(JSON.stringify(errors,null,'\t'));
+    if (errors.length !== 0) {
+        return lval_err(JSON.stringify(errors, null, '\t'));
     }
     //2. convert to ast, get lval
     parser.startWalk(parser.tree);
@@ -102,7 +129,7 @@ Lispy.prototype.eval_sexpr = function (e, v) {
 
     let f = v.pop(0);
     if (f.type !== Lval.FUN) {
-        let r = lval_err(`S-Expression starts with incorrect type. Got ${ltype_name(f.type)}, Expected ${ ltype_name(Lval.FUN)}.`);
+        let r = lval_err(`S-Expression starts with incorrect type. Got ${ltype_name(f.type)}, Expected ${ ltype_name(Lval.FUN)}.`, f.line);
         return r;
     }
 
@@ -127,7 +154,7 @@ Lispy.prototype.lval_call = function (e, f, a) {
     while (a.count()) {
         /* If we've ran out of formal arguments to bind */
         if (f.formals.count() == 0) {
-            return lval_err(`Function passed too many arguments. Got ${given}, Expected ${total}.`);
+            return lval_err(`Function passed too many arguments. Got ${given}, Expected ${total}.`, f.line);
         }
 
         /* Pop the first symbol from the formals */
@@ -138,7 +165,7 @@ Lispy.prototype.lval_call = function (e, f, a) {
 
             /* Ensure '&' is followed by another symbol */
             if (f.formals.count() != 1) {
-                return lval_err(`Function format invalid. Symbol '&' not followed by single symbol.`);
+                return lval_err(`Function format invalid. Symbol '&' not followed by single symbol.`, sym.line);
             }
 
             /* Next formal should be bound to remaining arguments */
@@ -160,7 +187,7 @@ Lispy.prototype.lval_call = function (e, f, a) {
 
         /* Check to ensure that & is not passed invalidly. */
         if (f.formals.count() != 2) {
-            return lval_err("Function format invalid. Symbol '&' not followed by single symbol.");
+            return lval_err("Function format invalid. Symbol '&' not followed by single symbol.", f.line);
         }
 
         /* Pop and delete '&' symbol */
@@ -240,6 +267,13 @@ Lispy.prototype.lenv_add_builtins = function (e) {
     this.lenv_add_builtin(e, "<", this.builtin_lt);
     this.lenv_add_builtin(e, ">=", this.builtin_ge);
     this.lenv_add_builtin(e, "<=", this.builtin_le);
+
+
+    /* String Functions */
+    this.lenv_add_builtin(e, "load", this.builtin_load);
+    this.lenv_add_builtin(e, "error", this.builtin_error);
+    this.lenv_add_builtin(e, "print", this.builtin_print);
+    this.lenv_add_builtin(e, "pt", this.builtin_print_tree);
 };
 Lispy.prototype.builtin_def = function (e, a) {
     return this.builtin_var(e, a, "def");
@@ -253,7 +287,7 @@ Lispy.prototype.builtin_put = function (e, a) {
 //def {a b} 5 6
 Lispy.prototype.builtin_var = function (e, a, func) {
     if (a.cell[0].type != Lval.QEXPR) {
-        return lval_err(`Function '${func}' passed incorrect type for argument 0. Got ${ltype_name(a.cell[0].type)}, Expected Q-Expression.`);
+        return lval_err(`Function '${func}' passed incorrect type for argument 0. Got ${ltype_name(a.cell[0].type)}, Expected Q-Expression.`, a.cell[0].line);
     }
 
     let syms = a.cell[0];
@@ -261,13 +295,13 @@ Lispy.prototype.builtin_var = function (e, a, func) {
     /* Ensure all elements of first list are symbols */
     for (let i = 0; i < syms.count(); i++) {
         if (syms.cell[i].type !== Lval.SYM) {
-            return lval_err(`Function '${func}' cannot define non-symbol. Got ${ltype_name(a.cell[i].type)}, Expected ${ltype_name(Lval.SYM)}.`);
+            return lval_err(`Function '${func}' cannot define non-symbol. Got ${ltype_name(a.cell[i].type)}, Expected ${ltype_name(Lval.SYM)}.`, a.cell[i].line);
         }
     }
 
     /* Check correct number of symbols and values */
     if (syms.count() !== a.count() - 1) {
-        return lval_err(`Function ''${func}' passed too many arguments for symbols. Got ${a.count() - 1}, Expected ${syms.count()}.`);
+        return lval_err(`Function ''${func}' passed too many arguments for symbols. Got ${a.count() - 1}, Expected ${syms.count()}.`, syms.line);
     }
 
     /* Assign copies of values to symbols */
@@ -289,21 +323,21 @@ Lispy.prototype.builtin_var = function (e, a, func) {
 Lispy.prototype.builtin_lambda = function (e, a) {
     /* Check Two arguments, each of which are Q-Expressions */
     if (a.count() != 2) {
-        return lval_err(`Function '\\' passed incorrect number of arguments. Got ${a.count()}, Expected 2.`);
+        return lval_err(`Function '\\' passed incorrect number of arguments. Got ${a.count()}, Expected 2.`, a.line);
     }
 
     if (a.cell[0].type != Lval.QEXPR) {
-        return lval_err(`Function '\\' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected Q-Expression.`);
+        return lval_err(`Function '\\' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected Q-Expression.`, a.cell[0].line);
     }
 
     if (a.cell[1].type != Lval.QEXPR) {
-        return lval_err(`Function '\\' passed incorrect type for argument 2. Got ${ltype_name(a.cell[1].type)}, Expected Q-Expression.`);
+        return lval_err(`Function '\\' passed incorrect type for argument 2. Got ${ltype_name(a.cell[1].type)}, Expected Q-Expression.`, a.cell[1].line);
     }
 
     /* Check first Q-Expression contains only Symbols */
     for (let i = 0; i < a.cell[0].count(); i++) {
         if (a.cell[0].cell[i].type !== Lval.SYM) {
-            return lval_err(`Cannot define non-symbol. Got ${ltype_name(a.cell[0].cell[i].type)}, Expected ${ltype_name(Lval.SYM)}.`);
+            return lval_err(`Cannot define non-symbol. Got ${ltype_name(a.cell[0].cell[i].type)}, Expected ${ltype_name(Lval.SYM)}.`, a.cell[0].cell[i].line);
         }
     }
 
@@ -325,17 +359,17 @@ Lispy.prototype.builtin_head = function (e, a) {
     let r;
     do {
         if (a.count() != 1) {
-            r = lval_err(`Function 'head' passed incorrect number of arguments. Got ${a.count()}, Expected 1.`);
+            r = lval_err(`Function 'head' passed incorrect number of arguments. Got ${a.count()}, Expected 1.`, a.line);
             break;
         }
 
         if (a.cell[0].type != Lval.QEXPR) {
-            r = lval_err(`Function 'head' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected Q-Expression.`);
+            r = lval_err(`Function 'head' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected Q-Expression.`, a.cell[0].line);
             break;
         }
 
         if (a.cell[0].count() == 0) {
-            r = lval_err("Function 'head' passed {}!");
+            r = lval_err("Function 'head' passed {}!", a.cell[0].line);
             break;
         }
 
@@ -354,17 +388,17 @@ Lispy.prototype.builtin_tail = function (e, a) {
     let r;
     do {
         if (a.count() != 1) {
-            r = lval_err(`Function 'tail' passed incorrect number of arguments. Got ${a.count()}, Expected 1.`);
+            r = lval_err(`Function 'tail' passed incorrect number of arguments. Got ${a.count()}, Expected 1.`, a.line);
             break;
         }
 
         if (a.cell[0].type != Lval.QEXPR) {
-            r = lval_err(`Function 'tail' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected Q-Expression.`);
+            r = lval_err(`Function 'tail' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected Q-Expression.`, a.cell[0].line);
             break;
         }
 
         if (a.cell[0].count() == 0) {
-            r = lval_err("Function 'tail' passed {}!");
+            r = lval_err("Function 'tail' passed {}!", a.cell[0].line);
             break;
         }
         //input is tail {1 2 3 }
@@ -382,7 +416,7 @@ Lispy.prototype.builtin_join = function (e, a) {
 
     for (let i = 0; i < a.count(); i++) {
         if (a.cell[i].type !== Lval.QEXPR) {
-            return lval_err(`Function 'tail' passed incorrect type for argument ${i}. Got ${ltype_name(a.cell[i].type)}, Expected Q-Expression.`);
+            return lval_err(`Function 'tail' passed incorrect type for argument ${i}. Got ${ltype_name(a.cell[i].type)}, Expected Q-Expression.`, a.cell[i].line);
         }
     }
 
@@ -399,12 +433,12 @@ Lispy.prototype.builtin_eval = function (e, a) {
     let r;
     do {
         if (a.count() != 1) {
-            r = lval_err(`Function 'eval' passed incorrect number of arguments. Got ${a.count()}, Expected 1.`);
+            r = lval_err(`Function 'eval' passed incorrect number of arguments. Got ${a.count()}, Expected 1.`, a.line);
             break;
         }
 
         if (a.cell[0].type != Lval.QEXPR) {
-            r = lval_err(`Function 'eval' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected Q-Expression.`);
+            r = lval_err(`Function 'eval' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected Q-Expression.`, a.cell[0].line);
             break;
         }
 
@@ -420,7 +454,7 @@ Lispy.prototype.builtin_eval = function (e, a) {
 Lispy.prototype.builtin_op = function (e, a, op) {
     for (let i = 0; i < a.count(); i++) {
         if (a.cell[i].type !== Lval.NUM) {
-            return lval_err("Cannot operate on non-number!");
+            return lval_err("Cannot operate on non-number!", a.line);
         }
     }
 
@@ -450,15 +484,15 @@ Lispy.prototype.builtin_op = function (e, a, op) {
 
 Lispy.prototype.builtin_ord = function (e, a, op) {
     if (a.count() != 2) {
-        return lval_err(`Function '${op}' passed incorrect number of arguments. Got ${a.count()}, Expected 2.`);
+        return lval_err(`Function '${op}' passed incorrect number of arguments. Got ${a.count()}, Expected 2.`, a.line);
     }
 
     if (a.cell[0].type != Lval.NUM) {
-        return lval_err(`Function '${op}' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected ${ltype_name(Lval.NUM)}.`);
+        return lval_err(`Function '${op}' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected ${ltype_name(Lval.NUM)}.`, a.cell[0].line);
     }
 
     if (a.cell[1].type != Lval.NUM) {
-        return lval_err(`Function '${op}' passed incorrect type for argument 2. Got ${ltype_name(a.cell[1].type)}, Expected ${ltype_name(Lval.NUM)}.`);
+        return lval_err(`Function '${op}' passed incorrect type for argument 2. Got ${ltype_name(a.cell[1].type)}, Expected ${ltype_name(Lval.NUM)}.`, a.cell[1].line);
     }
 
     let r;
@@ -493,7 +527,7 @@ Lispy.prototype.builtin_le = function (e, a) {
 
 Lispy.prototype.builtin_cmp = function (e, a, op) {
     if (a.count() != 2) {
-        return lval_err(`Function '${op}' passed incorrect number of arguments. Got ${a.count()}, Expected 2.`);
+        return lval_err(`Function '${op}' passed incorrect number of arguments. Got ${a.count()}, Expected 2.`, a.line);
     }
 
     let r;
@@ -516,19 +550,19 @@ Lispy.prototype.builtin_ne = function (e, a) {
 };
 Lispy.prototype.builtin_if = function (e, a) {
     if (a.count() != 3) {
-        return lval_err(`Function 'if' passed incorrect number of arguments. Got ${a.count()}, Expected 3.`);
+        return lval_err(`Function 'if' passed incorrect number of arguments. Got ${a.count()}, Expected 3.`, a.line);
     }
 
     if (a.cell[0].type != Lval.NUM) {
-        return lval_err(`Function 'if' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected ${ltype_name(Lval.NUM)}.`);
+        return lval_err(`Function 'if' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected ${ltype_name(Lval.NUM)}.`, a.cell[0].line);
     }
 
     if (a.cell[1].type != Lval.QEXPR) {
-        return lval_err(`Function 'if' passed incorrect type for argument 2. Got ${ltype_name(a.cell[1].type)}, Expected ${ltype_name(Lval.QEXPR)}.`);
+        return lval_err(`Function 'if' passed incorrect type for argument 2. Got ${ltype_name(a.cell[1].type)}, Expected ${ltype_name(Lval.QEXPR)}.`, a.cell[1].line);
     }
 
     if (a.cell[2].type != Lval.QEXPR) {
-        return lval_err(`Function 'if' passed incorrect type for argument 2. Got ${ltype_name(a.cell[2].type)}, Expected ${ltype_name(Lval.QEXPR)}.`);
+        return lval_err(`Function 'if' passed incorrect type for argument 2. Got ${ltype_name(a.cell[2].type)}, Expected ${ltype_name(Lval.QEXPR)}.`, a.cell[2].line);
     }
 
     /* Mark Both Expressions as evaluable */
@@ -546,8 +580,73 @@ Lispy.prototype.builtin_if = function (e, a) {
 
     /* Delete argument list and return */
     return x;
-}
+};
 
+Lispy.prototype.builtin_load = function (e, a) {
+    if (a.count() != 1) {
+        return lval_err(`Function 'load' passed incorrect number of arguments. Got ${a.count()}, Expected 1.`, a.line);
+    }
+
+    if (a.cell[0].type != Lval.STR) {
+        return lval_err(`Function 'load' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected ${ltype_name(Lval.STR)}.`, a.cell[0].line);
+    }
+
+    let filePath = JSON.parse(a.cell[0].str);
+    var rf = require("fs");
+
+    try {
+        let data = rf.readFileSync(filePath, 'utf-8');
+        let r = this.start_eval_file(data);
+
+        for (let i = 0; i < r.length; i++) {
+            if (r.type === Lval.ERR) {
+                this.println(r);
+            }
+        }
+
+    } catch (err) {
+        // Here you get the error when the file was not found,
+        // but you also get any other error
+        console.log(`Can not load file from ${filePath} !\n`);
+
+    }
+
+    return lval_sexpr();
+};
+
+
+Lispy.prototype.builtin_print = function (e, a) {
+    /* Print each argument followed by a space */
+    for (let i = 0; i < a.count(); i++) {
+        this.print(a.cell[i]);
+        process.stdout.write(' ');
+    }
+    /* Print a newline and delete arguments */
+    process.stdout.write('\n');
+
+    return lval_sexpr();
+};
+
+Lispy.prototype.builtin_error = function (e, a) {
+    if (a.count() != 1) {
+        return lval_err(`Function 'error' passed incorrect number of arguments. Got ${a.count()}, Expected 1.`, a.line);
+    }
+
+    if (a.cell[0].type != Lval.STR) {
+        return lval_err(`Function 'error' passed incorrect type for argument 1. Got ${ltype_name(a.cell[0].type)}, Expected ${ltype_name(Lval.STR)}.`, a.cell[0].line);
+    }
+
+    /* Construct Error from first argument */
+    let err = lval_err(a.cell[0].str);
+
+    /* Delete arguments and return */
+    return err;
+};
+
+Lispy.prototype.builtin_print_tree = function (e, a) {
+    this.printTree(a);
+    return lval_sexpr();
+};
 
 Lispy.prototype.printTree = function (v) {
     console.log(tree.asTree(v, true));
@@ -564,7 +663,11 @@ Lispy.prototype.print = function (v) {
     this.log(v.value());
 };
 Lispy.prototype.log = function (str) {
-    process.stdout.write(str.toString());
+    if (typeof  str === 'string') {
+        process.stdout.write(str);
+    } else {
+        process.stdout.write(str.toString());
+    }
 };
 
 
