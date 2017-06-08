@@ -13,7 +13,7 @@
   },
   "scripts": {
     "test": "mocha --require test/support/env --reporter spec --bail --check-leaks test/",
-    "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --require test/support/env --reporter spec  test/",
+    "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --require test/support/env --reporter spec --check-leaks test/",
     "coverage": "cat ./coverage/lcov.info | coveralls"
   },
   "dependencies": {},
