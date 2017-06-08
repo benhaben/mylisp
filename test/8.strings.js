@@ -352,6 +352,7 @@ describe('8.strings.js', function () {
         });
 
         it('load "./test/prelude.lspy"', function () {
+            this.timeout(0);//increase the timeout for a single test case
             const line = 'load "./test/prelude.lspy"';
             let r = lispy.start_eval(line);
             expect(r.value()).to.equal('()');
