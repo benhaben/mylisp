@@ -344,6 +344,18 @@ describe('8.strings.js', function () {
             let r = lispy.start_eval(line);
             expect(r.value()).to.equal('"hello"');
         });
+
+        it('load "./test/hello.lspy"', function () {
+            const line = 'load "./test/hello.lspy"';
+            let r = lispy.start_eval(line);
+            expect(r.value()).to.equal('()');
+        });
+
+        it('load "./test/prelude.lspy"', function () {
+            const line = 'load "./test/prelude.lspy"';
+            let r = lispy.start_eval(line);
+            expect(r.value()).to.equal('()');
+        });
     });
 
 });
