@@ -1,9 +1,12 @@
 {
   "author": "yinshen.sy",
-  "name": "myLisp",
-  "description": "toy lisp",
+  "name": "toy-lisp",
+  "description": "a toy lisp implement by JavaScript",
   "license": "MIT",
   "version": "0.0.1",
+  "bin": {
+    "ml": "./8.strings/repl.js"
+  },
   "keywords": [
     "lisp"
   ],
@@ -16,7 +19,10 @@
     "test-ci": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --require test/support/env --reporter spec --check-leaks test/",
     "coverage": "cat ./coverage/lcov.info | coveralls"
   },
-  "dependencies": {},
+  "dependencies": {
+    "antlr4": "^4.7.0",
+    "treeify": "^1.0.1"
+  },
   "devDependencies": {
     "antlr4": "^4.7.0",
     "chai": "^3.5.0",
