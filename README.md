@@ -17,6 +17,7 @@ Your can study how to implement a toy lisp in Javascript, i list some interestin
 so if you dig into the code, you will get skills to use JS, some basic ideas about compiler and have ability to develop DSL.
 
 # Test toy lisp
+
 you can install toy lisp by npm:
 ```
 npm install toy-lisp -g
@@ -24,7 +25,30 @@ npm install toy-lisp -g
 
 please have a look at test case, there are a lot of examples.
 
-#directory structure of source code 
+# How to use
+
+1. after installing toy-lsip, you can tab "ml" in the command.
+```
+ml
+```
+
+2. load lib
+```
+load "lib.lspy"
+```
+load is a builtin function of toy lisp.
+"lib.lspy" is a standard lib.
+
+3. call Fibonacci function in lib
+```
+fib 10
+```
+you will get 55
+
+4. see test case to get more examples
+
+
+# directory structure
 
 Each directory is a chapter, you can read "buildyourownlisp" step by step, thanks anthor very much.
 
