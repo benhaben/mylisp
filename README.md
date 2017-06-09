@@ -1,4 +1,4 @@
-# use JavaScript to implement my lisp
+# use JavaScript to implement toy lisp
 
 
 [![Build Status](https://travis-ci.org/benhaben/mylisp.svg?branch=master)](https://travis-ci.org/benhaben/mylisp)
@@ -7,16 +7,26 @@
 
 This project is a js-version of "buildyourownlisp" from http://www.buildyourownlisp.com/contents
 
-Your can study how to implement a toy lisp in Javascript, i list some interesting technique which i used in the project here:
+Your can study how to implement a toy lisp in Javascript, i list some interesting technique which used in the project here:
 1. use antlr to produce AST for mylisp
 2. reduce antlr's AST levels to get a new tree
 3. implement semantic by JS
 4. add mocha, chai, sinon to test 
 5. add ci and coverage
 
-so if you dig into the code, you will get skills to use JS.
+so if you dig into the code, you will get skills to use JS, some basic ideas about compiler and have ability to develop DSL.
+
+# Test toy lisp
+you can install toy lisp by npm:
+```
+npm install toy-lisp -g
+```
+
+please have a look at test case, there are a lot of examples.
 
 #directory structure of source code 
+
+Each directory is a chapter, you can read "buildyourownlisp" step by step, thanks anthor very much.
 
 ## 1.date_example
 
@@ -36,10 +46,9 @@ WS : [ \t\r\n]+ -> skip ;
 
 ```
 
-if you do not know antlr, you can have a look at `the-definitive-antlr-4-reference_p2_0`, the book is at doc directory.
-this book sales at http://www.antlr.org/. 
+If you do not know antlr, you can have a look at `the-definitive-antlr-4-reference_p2_0`, the book is at doc directory. This book sales at http://www.antlr.org/. 
 
-antlr prepare grammars for a lot of language, please see https://github.com/antlr/grammars-v4/blob/master/clojure/Clojure.g4
+Antlr prepare grammars for a lot of language, please see https://github.com/antlr/grammars-v4/blob/master/clojure/Clojure.g4
 
 ## 2.polish_notation
 you can study to parse polish notation.
@@ -47,13 +56,29 @@ you can study to parse polish notation.
 this chapter discuss parsing polish notation very well.
 http://www.buildyourownlisp.com/chapter6_parsing
 
+## 3.qexpr
+should read qexpr after sexqr.
+http://www.buildyourownlisp.com/chapter10_q_expressions
+
+## 4.sexpr
+http://www.buildyourownlisp.com/chapter9_s_expressions
+
+## 5.variables
+http://www.buildyourownlisp.com/chapter11_variables
+
+## 6.functions
+http://www.buildyourownlisp.com/chapter12_functions
+
+## 7.functions
+http://www.buildyourownlisp.com/chapter13_conditionals
+
 ## 8.string
-this is the last chapter to implement your own lisp.
-you can study step by step because my code is total following http://www.buildyourownlisp.com/
+This is the last chapter to implement your own lisp.
+You can study step by step because my code is total following http://www.buildyourownlisp.com/
 
 # why re-implement
-The best way to study coding is to do a project, i want to have my own lisp because every developer want to know how compiler working.
-If you have question to ask me when you read the code, please report a bug and i will discuss with you.
+1. The best way to study coding is to complete a project, if you want to use JavaScript or want to know how to implement a langague parser, you may have interesting to reimplement. 
+2. As a developer I want to know how compiler working. 
+3. JavaScript has higher productivity than C
 
-if you use wechat, you can add me and discuss software problems with me.
-my wechat number is benhaben.
+If you have question to ask me, please report a bug or add my wechat. My wechat number is benhaben.
